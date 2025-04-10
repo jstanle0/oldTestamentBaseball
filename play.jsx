@@ -1,34 +1,32 @@
 import React from "react";
 import { useNavigate } from "react-router-dom";
-import { wordContext, wordLengthContext } from ".";
+import { verseContext } from ".";
 
 export function Play() {
     const navigate = useNavigate();
-    const {selectedWord, setSelectedWord} = React.useContext(wordContext);
-    const {wordLength, setWordLength} = React.useContext(wordLengthContext);
+    const {selectedVerse, setSelectedVerse} = React.useContext(verseContext);
     const [guessedCharacters, setGuessedCharacters] = React.useState([]);
     const [currentGuess, setCurrentGuess] = React.useState('');
     const [displayError, setDisplayError] = React.useState('');
     const [incorrectGuesses, setIncorrectGuesses] = React.useState([]);
+    const [hintVerses, setHintVerses] = React.useState([]);
+    const [displayedHints, setDisplayedHints] = React.useState([]);
 
-    const getRandomWord = async ()=>{
+    const getRandomVerse = async ()=>{
         //Fetch a random word from api.
         //TODO add vaiable word lengths
         //TODO review documentation, some of the words look like other languages
-        const response = await fetch(`https://random-word-api.herokuapp.com/word?lang=en&length=${wordLength}`);
+        const response = await fetch(`https://bible-api.com/data/kjv/random/OT`);
         if (response.ok) {
             const body = await response.json();
-            let wordList = [];
-            for (const character of body[0]) {
-                wordList.push(character);
-            }
-            setSelectedWord(wordList);
+            setSelectedVerse(body.random_verse)
         }
     }
     React.useEffect(()=>{
-        getRandomWord()
+        getRandomVerse()
     }, [])
 
+    //Old copied code, TODO remove
     function renderWord() {
         //Display guessed characters, with unguessed characters as "_", checks win condition
         //TODO more efficent rendering function that requires less iteration
@@ -89,14 +87,35 @@ export function Play() {
         setDisplayError('');
     }
 
+    //Start actual code
+    async function addHint() {
+        let currentVerse;
+        if (!hintVerses.length==0) {
+            currentVerse = hintVerses.at(-1);
+        } else {
+            currentVerse = selectedVerse;
+        }
+        const response = await fetch(`https://bible-api.com/${currentVerse.book_id} ${currentVerse.chapter}:${currentVerse.verse + 1}?translation=kjv`)
+        if (response.ok) {
+            const body = await response.json()
+            return body.verses[0]
+        } else {
+            return {verse: 0, text: 'End of chapter'}
+        }
+
+    }
+    function displayHintVerses() {
+        const verses = [];
+        for (const verse of hintVerses) {
+            verses.push(<p key={verse.verse}>{verse.text}</p>)
+        }
+        return verses
+    }
+
     return <main>
-        <h1>{renderWord()}</h1>
-        <form onSubmit={(e)=>guessLetter(e)}>
-            <input type="text" placeholder="Guess a letter!" value={currentGuess} onChange={(e)=>setCurrentGuess(e.target.value)}></input>
-            <button type="submit">Guess!</button>
-        </form>
-        {displayError && <p>Error: {displayError}</p>}
-        <p>Incorrect Guesses (Limit 7)</p>
-        <h1>{renderIncorrectGuesses()}</h1>
+        <h1>Where is this verse?</h1>
+        <p>{selectedVerse.text}</p>
+        {displayHintVerses()}
+        <button onClick={async ()=>setHintVerses([...hintVerses, await addHint()])}>Reveal next verse</button>
     </main>
 }
