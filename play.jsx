@@ -1,6 +1,7 @@
 import React from "react";
 import { useNavigate } from "react-router-dom";
 import { verseContext } from ".";
+import { books } from './bibleList.json';
 
 export function Play() {
     const navigate = useNavigate();
@@ -13,9 +14,7 @@ export function Play() {
     const [displayedHints, setDisplayedHints] = React.useState([]);
 
     const getRandomVerse = async ()=>{
-        //Fetch a random word from api.
-        //TODO add vaiable word lengths
-        //TODO review documentation, some of the words look like other languages
+        //Fetch a random verse from api.
         const response = await fetch(`https://bible-api.com/data/kjv/random/OT`);
         if (response.ok) {
             const body = await response.json();
@@ -95,12 +94,12 @@ export function Play() {
         } else {
             currentVerse = selectedVerse;
         }
-        const response = await fetch(`https://bible-api.com/${currentVerse.book_id} ${currentVerse.chapter}:${currentVerse.verse + 1}?translation=kjv`)
+        const response = await fetch(`https://bible-api.com/${currentVerse.book_id} ${currentVerse.chapter}:${currentVerse.verse + 1}?translation=kjv`);
         if (response.ok) {
-            const body = await response.json()
-            return body.verses[0]
+            const body = await response.json();
+            return body.verses[0];
         } else {
-            return {verse: 0, text: 'End of chapter'}
+            return {verse: 0, text: 'End of chapter'};
         }
 
     }
@@ -111,11 +110,22 @@ export function Play() {
         }
         return verses
     }
+    function displayBooks() {
+        const bookNames = [];
+        for (const book of books) { 
+            bookNames.push(<span key={book.id}>
+            <input type="radio" className="btn-check" name="options-outlined" id={book.id} autoComplete="off"/>
+            <label className="btn btn-outline-danger" htmlFor={book.id}>{book.name}</label>
+            </span>)
+        }
+        return bookNames
+    }
 
     return <main>
         <h1>Where is this verse?</h1>
         <p>{selectedVerse.text}</p>
         {displayHintVerses()}
         <button onClick={async ()=>setHintVerses([...hintVerses, await addHint()])}>Reveal next verse</button>
+        <div className="form-check">{displayBooks()}</div>
     </main>
 }

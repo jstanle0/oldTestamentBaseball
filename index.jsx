@@ -3,6 +3,7 @@ import React from "react";
 import ReactDOM from 'react-dom/client';
 import { BrowserRouter, Route, Routes, useNavigate } from "react-router-dom";
 import { Play } from "./play";
+import 'bootstrap/dist/css/bootstrap.min.css';
 import './main.css';
 
 export const verseContext = React.createContext(null);
@@ -11,7 +12,6 @@ function Main() {
     const navigate = useNavigate()
     return <main>
     <h1>Welcome to Old Testament Baseball!</h1>
-    
     <button className="btn-lrg" onClick={()=>navigate('/home')}>Play!</button>
     </main>
 }
