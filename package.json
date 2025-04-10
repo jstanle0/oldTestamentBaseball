@@ -1,5 +1,5 @@
 {
-  "name": "wordguesser",
+  "name": "oldtestamentbaseball",
   "version": "1.0.0",
   "description": "",
   "main": "index.js",
@@ -9,15 +9,15 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/jstanle0/wordguesser.git"
+    "url": "git+https://github.com/jstanle0/oldTestamentBaseball.git"
   },
   "keywords": [],
   "author": "",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/jstanle0/wordguesser/issues"
+    "url": "https://github.com/jstanle0/oldTestamentBaseball/issues"
   },
-  "homepage": "https://github.com/jstanle0/wordguesser#readme",
+  "homepage": "https://github.com/jstanle0/oldTestamentBaseball#readme",
   "devDependencies": {
     "vite": "^6.2.5"
   },
