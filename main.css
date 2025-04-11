@@ -9,9 +9,9 @@ body {
     align-items: center;
     height: 100vh;
 }
-#root * {
+/*#root * {
     flex: 1 0;
-}
+}*/
 main {
     display: flex;
     flex-direction: column;

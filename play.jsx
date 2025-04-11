@@ -125,7 +125,7 @@ export function Play() {
         const bookNames = [];
         for (const book of books) { 
             bookNames.push(<span key={book.id}>
-            <input type="radio" className="btn-check" name="options-outlined" id={book.id} value={book.name} autoComplete="off" onChange={(e)=>setBookGuess(e.target.value)} disabled={bookCorrect}/>
+            <input type="radio" className="btn-check" name="book-form" id={book.id} value={book.name} autoComplete="off" onChange={(e)=>setBookGuess(e.target.value)} disabled={bookCorrect}/>
             <label className={`btn btn-outline-${bookCorrect ? 'success': 'light'}`} htmlFor={book.id}>{book.name}</label>
             </span>)
         }
@@ -137,7 +137,7 @@ export function Play() {
         if (curBook) {
             for (let i = 0; i < curBook.chapters.length; i++) {
                 chapters.push(<span key={'chapter' + (i + 1)}>
-                    <input type="radio" className="btn-check" name="options-outlined" id={'chapter' + (i + 1)} value={i + 1} autoComplete="off" onChange={(e)=>setChapterGuess(e.target.value)} disabled={chapterCorrect}/>
+                    <input type="radio" className="btn-check" name="chapter-form" id={'chapter' + (i + 1)} value={i + 1} autoComplete="off" onChange={(e)=>setChapterGuess(e.target.value)} disabled={chapterCorrect}/>
                     <label className={`btn btn-outline-${chapterCorrect ? 'success': 'light'}`} htmlFor={'chapter' + (i + 1)}>{i + 1}</label>
                     </span>)
             }
@@ -150,14 +150,16 @@ export function Play() {
         <p>{selectedVerse.text}</p>
         {displayHintVerses()}
         <button onClick={async ()=>setHintVerses([...hintVerses, await addHint()])}>Reveal next verse</button>
-        <div className="form-check">
+        <div className="form-check" id='bookForm'>
             {displayBooks()}
             <button type="button" className="btn btn-outline-light" onClick={() => handleSubmit(bookGuess, 'book', setBookCorrect)}>Guess Book</button>
         </div>
-        {bookCorrect && <div className="form-check">
+        <br/>
+        {bookCorrect && <div className="form-check" id='chapterForm'>
             {displayChapters()}
             <button type="button" className="btn btn-outline-light" onClick={()=>handleSubmit(chapterGuess, 'chapter', setChapterCorrect)}>Guess Chapter</button>
         </div>}
+        <br/>
         {chapterCorrect && <div className="form-check">
             {displayChapters()}
             <button type="button" className="btn btn-outline-light" onClick={()=>handleSubmit(chapterGuess, 'chapter', setChapterCorrect)}>Guess Chapter</button>
