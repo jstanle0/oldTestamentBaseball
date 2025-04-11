@@ -1,7 +1,7 @@
 import React from "react";
 import { useNavigate } from "react-router-dom";
 import { verseContext } from ".";
-import { books } from './bibleList.json';
+import { books } from './bibleBook.json';
 
 export function Play() {
     const navigate = useNavigate();
@@ -115,7 +115,7 @@ export function Play() {
         for (const book of books) { 
             bookNames.push(<span key={book.id}>
             <input type="radio" className="btn-check" name="options-outlined" id={book.id} autoComplete="off"/>
-            <label className="btn btn-outline-danger" htmlFor={book.id}>{book.name}</label>
+            <label className="btn btn-outline-light" htmlFor={book.id}>{book.name}</label>
             </span>)
         }
         return bookNames
