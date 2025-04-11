@@ -2,16 +2,18 @@ import React from "react";
 import { useNavigate } from "react-router-dom";
 import { verseContext } from ".";
 import { books } from './bibleBook.json';
+import chapterVerse from './bibleChapterVerse.json';
 
 export function Play() {
     const navigate = useNavigate();
     const {selectedVerse, setSelectedVerse} = React.useContext(verseContext);
-    const [guessedCharacters, setGuessedCharacters] = React.useState([]);
-    const [currentGuess, setCurrentGuess] = React.useState('');
     const [displayError, setDisplayError] = React.useState('');
     const [incorrectGuesses, setIncorrectGuesses] = React.useState([]);
     const [hintVerses, setHintVerses] = React.useState([]);
-    const [displayedHints, setDisplayedHints] = React.useState([]);
+    const [bookGuess, setBookGuess] = React.useState('');
+    const [bookCorrect, setBookCorrect] = React.useState(false);
+    const [chapterGuess, setChapterGuess] = React.useState(null);
+    const [chapterCorrect, setChapterCorrect] = React.useState(false);
 
     const getRandomVerse = async ()=>{
         //Fetch a random verse from api.
@@ -103,6 +105,15 @@ export function Play() {
         }
 
     }
+
+    function handleSubmit(guess, valueType, setFunc) {
+        if (guess) {
+            if (guess == selectedVerse[valueType]) {
+                setFunc(true)
+            }
+        }
+    }
+
     function displayHintVerses() {
         const verses = [];
         for (const verse of hintVerses) {
@@ -114,11 +125,24 @@ export function Play() {
         const bookNames = [];
         for (const book of books) { 
             bookNames.push(<span key={book.id}>
-            <input type="radio" className="btn-check" name="options-outlined" id={book.id} autoComplete="off"/>
-            <label className="btn btn-outline-light" htmlFor={book.id}>{book.name}</label>
+            <input type="radio" className="btn-check" name="options-outlined" id={book.id} value={book.name} autoComplete="off" onChange={(e)=>setBookGuess(e.target.value)} disabled={bookCorrect}/>
+            <label className={`btn btn-outline-${bookCorrect ? 'success': 'light'}`} htmlFor={book.id}>{book.name}</label>
             </span>)
         }
         return bookNames
+    }
+    function displayChapters() {
+        const chapters = [];
+        const curBook = chapterVerse.find(book => book.book == selectedVerse.book);
+        if (curBook) {
+            for (let i = 0; i < curBook.chapters.length; i++) {
+                chapters.push(<span key={'chapter' + (i + 1)}>
+                    <input type="radio" className="btn-check" name="options-outlined" id={'chapter' + (i + 1)} value={i + 1} autoComplete="off" onChange={(e)=>setChapterGuess(e.target.value)} disabled={chapterCorrect}/>
+                    <label className={`btn btn-outline-${chapterCorrect ? 'success': 'light'}`} htmlFor={'chapter' + (i + 1)}>{i + 1}</label>
+                    </span>)
+            }
+        }
+        return chapters
     }
 
     return <main>
@@ -126,6 +150,17 @@ export function Play() {
         <p>{selectedVerse.text}</p>
         {displayHintVerses()}
         <button onClick={async ()=>setHintVerses([...hintVerses, await addHint()])}>Reveal next verse</button>
-        <div className="form-check">{displayBooks()}</div>
+        <div className="form-check">
+            {displayBooks()}
+            <button type="button" className="btn btn-outline-light" onClick={() => handleSubmit(bookGuess, 'book', setBookCorrect)}>Guess Book</button>
+        </div>
+        {bookCorrect && <div className="form-check">
+            {displayChapters()}
+            <button type="button" className="btn btn-outline-light" onClick={()=>handleSubmit(chapterGuess, 'chapter', setChapterCorrect)}>Guess Chapter</button>
+        </div>}
+        {chapterCorrect && <div className="form-check">
+            {displayChapters()}
+            <button type="button" className="btn btn-outline-light" onClick={()=>handleSubmit(chapterGuess, 'chapter', setChapterCorrect)}>Guess Chapter</button>
+        </div>}
     </main>
 }
