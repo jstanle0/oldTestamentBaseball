@@ -22,7 +22,7 @@ function Win() {
 
     return <main>
         <p>You win!</p>
-        <p>Word was {selectedVerse}. Time to celebrate!</p>
+        <p>The verse was {`${selectedVerse.book} ${selectedVerse.chapter}:${selectedVerse.verse}`}. Good job!</p>
         <div className="buttonContainer">
             <button className="btn-lrg" onClick={()=>navigate('/')}>Play again!</button>
         </div>

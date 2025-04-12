@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { verseContext } from ".";
 import { books } from './bibleBook.json';
 import chapterVerse from './bibleChapterVerse.json';
+import { NT } from './ntBooks.json';
 
 export function Play() {
     const navigate = useNavigate();
@@ -14,15 +15,18 @@ export function Play() {
     const [bookCorrect, setBookCorrect] = React.useState(false);
     const [chapterGuess, setChapterGuess] = React.useState(null);
     const [chapterCorrect, setChapterCorrect] = React.useState(false);
+    const [verseGuess, setVerseGuess] = React.useState('');
+    const [verseCorrect, setVerseCorrect] = React.useState(false);
 
     const getRandomVerse = async ()=>{
         //Fetch a random verse from api.
-        const response = await fetch(`https://bible-api.com/data/kjv/random/OT`);
+        const response = await fetch(`https://bible-api.com/data/kjv/random/NT`);
         if (response.ok) {
             const body = await response.json();
             setSelectedVerse(body.random_verse)
         }
     }
+
     React.useEffect(()=>{
         getRandomVerse()
     }, [])
@@ -113,6 +117,13 @@ export function Play() {
             }
         }
     }
+    function handleVerseSubmit(guess) {
+        if (guess) {
+            if (guess == selectedVerse['verse']) {
+                navigate('/win')
+            }
+        }
+    }
 
     function displayHintVerses() {
         const verses = [];
@@ -123,7 +134,7 @@ export function Play() {
     }
     function displayBooks() {
         const bookNames = [];
-        for (const book of books) { 
+        for (const book of NT) { 
             bookNames.push(<span key={book.id}>
             <input type="radio" className="btn-check" name="book-form" id={book.id} value={book.name} autoComplete="off" onChange={(e)=>setBookGuess(e.target.value)} disabled={bookCorrect}/>
             <label className={`btn btn-outline-${bookCorrect ? 'success': 'light'}`} htmlFor={book.id}>{book.name}</label>
@@ -145,6 +156,23 @@ export function Play() {
         return chapters
     }
 
+    function displayVerses() {
+        const chapters = [];
+        const curBook = chapterVerse.find(book => book.book == selectedVerse.book);
+        if (curBook) {
+            const curChapter = curBook.chapters.find(chapter => Number(chapter.chapter) == selectedVerse.chapter);
+            if (curChapter) {
+                for (let i = 0; i < curChapter.verses; i++) {
+                    chapters.push(<span key={'verse' + (i + 1)}>
+                        <input type="radio" className="btn-check" name="verse-form" id={'verse' + (i + 1)} value={i + 1} autoComplete="off" onChange={(e)=>setVerseGuess(e.target.value)} disabled={verseCorrect}/>
+                        <label className={`btn btn-outline-${verseCorrect ? 'success': 'light'}`} htmlFor={'verse' + (i + 1)}>{i + 1}</label>
+                        </span>)
+                }
+            }
+        }
+        return chapters
+    }
+
     return <main>
         <h1>Where is this verse?</h1>
         <p>{selectedVerse.text}</p>
@@ -161,8 +189,8 @@ export function Play() {
         </div>}
         <br/>
         {chapterCorrect && <div className="form-check">
-            {displayChapters()}
-            <button type="button" className="btn btn-outline-light" onClick={()=>handleSubmit(chapterGuess, 'chapter', setChapterCorrect)}>Guess Chapter</button>
+            {displayVerses()}
+            <button type="button" className="btn btn-outline-light" onClick={()=>handleVerseSubmit(verseGuess)}>Guess Verse</button>
         </div>}
     </main>
 }
