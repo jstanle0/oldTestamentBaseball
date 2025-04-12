@@ -19,6 +19,8 @@ export function Play() {
     const [verseCorrect, setVerseCorrect] = React.useState(false);
     const [strikes, setStrikes] = React.useState(0);
     const [maxStrikes, setMaxStrikes] = React.useState(3);
+    const [guessRange, setGuessRange] = React.useState([-1,999]);
+    const [wrongBooks, setWrongBooks] = React.useState([]);
 
     const getRandomVerse = async ()=>{
         //Fetch a random verse from api.
@@ -33,69 +35,20 @@ export function Play() {
         getRandomVerse()
     }, [])
 
-    //Old copied code, TODO remove
-    function renderWord() {
-        //Display guessed characters, with unguessed characters as "_", checks win condition
-        //TODO more efficent rendering function that requires less iteration
-        let renderedWord = [];
-        let wordFinished = true;
-        for (const character of selectedWord) {
-            if (guessedCharacters.includes(character)) {
-                renderedWord.push(character + " ");
+    React.useEffect(()=>{
+        if (strikes >= maxStrikes) {
+            if (bookCorrect && chapterCorrect) {
+                navigate('/win?complete=chapter')
+            } else if (bookCorrect) {
+                navigate('/win?complete=book')
             } else {
-                renderedWord.push("_ ");
-                wordFinished = false;
-            }
-        };
-        if (!renderedWord) {
-            return "Loading..."
-        }
-        if (wordFinished) {
-            navigate('/win')
-        }
-        return renderedWord;
-    }
-
-    function renderIncorrectGuesses() {
-        //Renders incorrect guessed characters
-        let renderedGuesses = ''
-        for (const character of incorrectGuesses) {
-            renderedGuesses += character + " "
-        }
-        return renderedGuesses
-    }
-
-    function guessLetter(e) {
-        //Recives user input, parses if it is valid
-        e.preventDefault();
-        if (/^[A-Z]$/.test(currentGuess)) {
-            parseLetter(currentGuess.toLowerCase())
-        } else if (/^[a-z]$/.test(currentGuess)) {
-            parseLetter(currentGuess)
-        } else {
-            setDisplayError("Only single letters accepted.")
-        }
-    }
-
-    function parseLetter(letter) {
-        //Processes letter that has been guessed. Sets lose condition.
-        if (guessedCharacters.includes(letter)) {
-            setDisplayError("This letter is already guessed.");
-            return
-        }
-        guessedCharacters.push(letter);
-        if (!selectedWord.includes(letter)) {
-            incorrectGuesses.push(letter);
-            if (incorrectGuesses.length > 7) {
                 navigate('/lose')
-            } 
+            }
         }
-        setCurrentGuess('');
-        setDisplayError('');
-    }
+    }, [strikes])
 
-    //Start actual code
     async function addHint() {
+        setStrikes(strikes+1)
         let currentVerse;
         if (!hintVerses.length==0) {
             currentVerse = hintVerses.at(-1);
@@ -116,16 +69,21 @@ export function Play() {
         if (guess) {
             if (guess == selectedVerse[valueType]) {
                 setFunc();
+                setDisplayError('');
+                setGuessRange([-1,999]);
             } else {
                 setStrikes(strikes + 1);
-                if (strikes >= maxStrikes) {
-                    if (bookCorrect && chapterCorrect) {
-                        navigate('/win?complete=chapter')
-                    } else if (bookCorrect) {
-                        navigate('/win?complete=book')
+                let type = typeof guess
+                if (type == "number") {
+                    if (guess > selectedVerse[valueType]) {
+                        setDisplayError("Too high!")
+                        setGuessRange([guessRange[0], guess-1])
                     } else {
-                        navigate('/lose')
+                        setDisplayError("Too low!")
+                        setGuessRange([guess-1, guessRange[1]])
                     }
+                } else {
+                    setWrongBooks([...wrongBooks, guess])
                 }
             }
         }
@@ -142,20 +100,21 @@ export function Play() {
         const bookNames = [];
         for (const book of books) { 
             bookNames.push(<span key={book.id}>
-            <input type="radio" className="btn-check" name="book-form" id={book.id} value={book.name} autoComplete="off" onChange={(e)=>setBookGuess(e.target.value)} disabled={bookCorrect}/>
-            <label className={`btn btn-outline-${bookCorrect ? 'success': 'light'}`} htmlFor={book.id}>{book.name}</label>
+            <input type="radio" className="btn-check" name="book-form" id={book.id} value={book.name} autoComplete="off" onChange={(e)=>setBookGuess(e.target.value)} disabled={bookCorrect || wrongBooks.includes(book.name)}/>
+            <label className={`btn btn-outline-${bookCorrect ? 'success': wrongBooks.includes(book.name) ? 'danger' : 'light'}`} htmlFor={book.id}>{book.name}</label>
             </span>)
         }
         return bookNames
     }
     function displayChapters() {
         const chapters = [];
+        console.log(guessRange)
         const curBook = chapterVerse.find(book => book.book == selectedVerse.book);
         if (curBook) {
             for (let i = 0; i < curBook.chapters.length; i++) {
                 chapters.push(<span key={'chapter' + (i + 1)}>
-                    <input type="radio" className="btn-check" name="chapter-form" id={'chapter' + (i + 1)} value={i + 1} autoComplete="off" onChange={(e)=>setChapterGuess(e.target.value)} disabled={chapterCorrect}/>
-                    <label className={`btn btn-outline-${chapterCorrect ? 'success': 'light'}`} htmlFor={'chapter' + (i + 1)}>{i + 1}</label>
+                    <input type="radio" className="btn-check" name="chapter-form" id={'chapter' + (i + 1)} value={i + 1} autoComplete="off" onChange={(e)=>setChapterGuess(e.target.value)} disabled={chapterCorrect || !(guessRange[0] < i  && i < guessRange[1])}/>
+                    <label className={`btn btn-outline-${chapterCorrect ? 'success': !(guessRange[0] < i  && i < guessRange[1]) ? 'warning' : 'light'}`} htmlFor={'chapter' + (i + 1)}>{i + 1}</label>
                     </span>)
             }
         }
@@ -170,8 +129,8 @@ export function Play() {
             if (curChapter) {
                 for (let i = 0; i < curChapter.verses; i++) {
                     chapters.push(<span key={'verse' + (i + 1)}>
-                        <input type="radio" className="btn-check" name="verse-form" id={'verse' + (i + 1)} value={i + 1} autoComplete="off" onChange={(e)=>setVerseGuess(e.target.value)} disabled={verseCorrect}/>
-                        <label className={`btn btn-outline-${verseCorrect ? 'success': 'light'}`} htmlFor={'verse' + (i + 1)}>{i + 1}</label>
+                        <input type="radio" className="btn-check" name="verse-form" id={'verse' + (i + 1)} value={i + 1} autoComplete="off" onChange={(e)=>setVerseGuess(e.target.value)} disabled={verseCorrect || !(guessRange[0] < i  && i < guessRange[1])}/>
+                        <label className={`btn btn-outline-${verseCorrect ? 'success': !(guessRange[0] < i  && i < guessRange[1]) ? 'warning' : 'light'}`} htmlFor={'verse' + (i + 1)}>{i + 1}</label>
                         </span>)
                 }
             }
@@ -203,13 +162,16 @@ export function Play() {
         <br/>
         {bookCorrect && <div className="form-check" id='chapterForm'>
             {displayChapters()}
-            <button type="button" className="btn btn-outline-secondary" onClick={()=>handleSubmit(chapterGuess, 'chapter', ()=>setChapterCorrect(true))}>Guess Chapter</button>
+            <button type="button" className="btn btn-outline-secondary" onClick={()=>handleSubmit(Number(chapterGuess), 'chapter', ()=>setChapterCorrect(true))}>Guess Chapter</button>
         </div>}
         <br/>
         {chapterCorrect && <div className="form-check">
             {displayVerses()}
-            <button type="button" className="btn btn-outline-secondary" onClick={()=>handleSubmit(verseGuess, 'verse', ()=>navigate('/win?complete=verse'))}>Guess Verse</button>
+            <button type="button" className="btn btn-outline-secondary" onClick={()=>handleSubmit(Number(verseGuess), 'verse', ()=>navigate('/win?complete=verse'))}>Guess Verse</button>
         </div>}
+        <div>
+            <p>{displayError}</p>
+        </div>
         <div>
             {displayStrikes()}
         </div>
