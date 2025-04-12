@@ -71,6 +71,23 @@ function Help() {
     </main>
 }
 
+function NT() {
+    const navigate = useNavigate();
+    const {hintNumber, setHintNumber} = React.useContext(hintContext)
+    return <main>
+    <h1 className="text-light text-center">Welcome to New Testament Baseball!</h1>
+    <p className="text-light fs-3">Select number of strikes:</p>
+    <div className="form-floating">
+        <input type="range" className="form-range" id="hintInput" value={hintNumber} onChange={(e)=>{setHintNumber(e.target.value)}} min='2' max='9'></input> 
+        <label htmlFor="hintInput" className="form-label text-light">{hintNumber}</label>
+    </div>
+    <div className="d-inline-flex gap-3">
+        <button className="btn btn-outline-success btn-lg" onClick={()=>navigate('/home?nt=true')}>Play!</button>
+        <button className="btn btn-outline-warning btn-lg" onClick={()=>navigate('/help')}>Instructions</button>
+    </div>
+    </main>
+}
+
 function App() {
     const [selectedVerse, setSelectedVerse] = React.useState('');
     const [hintNumber, setHintNumber] = React.useState(3);
@@ -84,7 +101,8 @@ function App() {
                     <Route path="/home" element={<Play/>}/>
                     <Route path="/win" element={<Win/>}/>
                     <Route path="/lose" element={<Lose/>}/>
-                    <Route path="/help" element={<Help />}/>
+                    <Route path="/help" element={<Help/>}/>
+                    <Route path="/NT" element={<NT/>}/>
                 </Routes>
             </hintContext.Provider>
         </verseContext.Provider>

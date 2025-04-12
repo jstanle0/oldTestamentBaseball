@@ -1,5 +1,5 @@
 import React from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { verseContext } from ".";
 import { hintContext } from ".";
 import { books } from './bibleBook.json';
@@ -23,10 +23,12 @@ export function Play() {
     const [maxStrikes, setMaxStrikes] = React.useState(hintNumber);
     const [guessRange, setGuessRange] = React.useState([-1,999]);
     const [wrongBooks, setWrongBooks] = React.useState([]);
+    const [searchParams] = useSearchParams();
+    const [nt, setNt] = React.useState(searchParams.get('nt') ? true : false);
 
     const getRandomVerse = async ()=>{
         //Fetch a random verse from api.
-        const response = await fetch(`https://bible-api.com/data/kjv/random/OT`);
+        const response = await fetch(`https://bible-api.com/data/kjv/random/${nt ? "NT" : "OT"}`);
         if (response.ok) {
             const body = await response.json();
             setSelectedVerse(body.random_verse)
@@ -100,7 +102,7 @@ export function Play() {
     }
     function displayBooks() {
         const bookNames = [];
-        for (const book of books) { 
+        for (const book of (nt ? NT : books)) { 
             bookNames.push(<span className="mt-3" style={{display: "inline-block"}} key={book.id}>
             <input type="radio" className="btn-check" name="book-form" id={book.id} value={book.name} autoComplete="off" onChange={(e)=>setBookGuess(e.target.value)} disabled={bookCorrect || wrongBooks.includes(book.name)}/>
             <label className={`btn btn-outline-${bookCorrect ? 'success': wrongBooks.includes(book.name) ? 'danger' : 'light'}`} htmlFor={book.id}>{book.name}</label>
