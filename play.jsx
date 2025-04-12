@@ -1,7 +1,7 @@
 import React from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
-import { verseContext } from ".";
-import { hintContext } from ".";
+import { verseContext } from "./index";
+import { hintContext } from "./index";
 import { books } from './bibleBook.json';
 import chapterVerse from './bibleChapterVerse.json';
 import { NT } from './ntBooks.json';
