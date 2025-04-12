@@ -1,7 +1,7 @@
 //TODO Add testing suite for edge cases
 import React from "react";
 import ReactDOM from 'react-dom/client';
-import { BrowserRouter, Route, Routes, useNavigate } from "react-router-dom";
+import { BrowserRouter, Route, Routes, useNavigate, useSearchParams } from "react-router-dom";
 import { Play } from "./play";
 import 'bootstrap/dist/css/bootstrap.min.css';
 import './main.css';
@@ -17,12 +17,23 @@ function Main() {
 }
 
 function Win() {
-    const navigate = useNavigate()
-    const {selectedVerse, setSelectedVerse} = React.useContext(verseContext)
+    const [searchParams, setSearchParams] = useSearchParams();
+    const navigate = useNavigate();
+    const {selectedVerse, setSelectedVerse} = React.useContext(verseContext);
+
+    const completion = searchParams.get('complete');
+    let message;
+    if (completion == 'verse') {
+        message = "Good job! You got it exactly right."
+    } else if (completion == 'chapter') {
+        message = "You got really close! Nice work."
+    } else if (completion == 'book') {
+        message = "Great start! Keep on trying."
+    }
 
     return <main>
-        <p>You win!</p>
-        <p>The verse was {`${selectedVerse.book} ${selectedVerse.chapter}:${selectedVerse.verse}`}. Good job!</p>
+        <p>{message}</p>
+        <p>The verse was {`${selectedVerse.book} ${selectedVerse.chapter}:${selectedVerse.verse}`}.</p>
         <div className="buttonContainer">
             <button className="btn-lrg" onClick={()=>navigate('/')}>Play again!</button>
         </div>
@@ -33,8 +44,8 @@ function Lose() {
     const navigate = useNavigate()
     const {selectedVerse, setSelectedVerse} = React.useContext(verseContext)
     return <main>
-        <p>You Lose!</p>
-        <p>Word was {selectedVerse}. Better luck next time!</p>
+        <p>Better luck next time!</p>
+        <p>The verse was {`${selectedVerse.book} ${selectedVerse.chapter}:${selectedVerse.verse}`}.</p>
         <div className="buttonContainer">
             <button className="btn-lrg" onClick={()=>navigate('/')}>Play again!</button>
         </div>

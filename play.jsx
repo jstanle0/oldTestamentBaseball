@@ -17,10 +17,12 @@ export function Play() {
     const [chapterCorrect, setChapterCorrect] = React.useState(false);
     const [verseGuess, setVerseGuess] = React.useState('');
     const [verseCorrect, setVerseCorrect] = React.useState(false);
+    const [strikes, setStrikes] = React.useState(0);
+    const [maxStrikes, setMaxStrikes] = React.useState(3);
 
     const getRandomVerse = async ()=>{
         //Fetch a random verse from api.
-        const response = await fetch(`https://bible-api.com/data/kjv/random/NT`);
+        const response = await fetch(`https://bible-api.com/data/kjv/random/OT`);
         if (response.ok) {
             const body = await response.json();
             setSelectedVerse(body.random_verse)
@@ -113,14 +115,18 @@ export function Play() {
     function handleSubmit(guess, valueType, setFunc) {
         if (guess) {
             if (guess == selectedVerse[valueType]) {
-                setFunc(true)
-            }
-        }
-    }
-    function handleVerseSubmit(guess) {
-        if (guess) {
-            if (guess == selectedVerse['verse']) {
-                navigate('/win')
+                setFunc();
+            } else {
+                setStrikes(strikes + 1);
+                if (strikes >= maxStrikes) {
+                    if (bookCorrect && chapterCorrect) {
+                        navigate('/win?complete=chapter')
+                    } else if (bookCorrect) {
+                        navigate('/win?complete=book')
+                    } else {
+                        navigate('/lose')
+                    }
+                }
             }
         }
     }
@@ -134,7 +140,7 @@ export function Play() {
     }
     function displayBooks() {
         const bookNames = [];
-        for (const book of NT) { 
+        for (const book of books) { 
             bookNames.push(<span key={book.id}>
             <input type="radio" className="btn-check" name="book-form" id={book.id} value={book.name} autoComplete="off" onChange={(e)=>setBookGuess(e.target.value)} disabled={bookCorrect}/>
             <label className={`btn btn-outline-${bookCorrect ? 'success': 'light'}`} htmlFor={book.id}>{book.name}</label>
@@ -173,6 +179,18 @@ export function Play() {
         return chapters
     }
 
+    function displayStrikes() {
+        const displayedStrikes = []
+        for (let i = 0; i < maxStrikes; i++) {
+            if (i < strikes) {
+                displayedStrikes.push(<span className="alert alert-danger" role="alert" key={'strike' + i}>X</span>);
+            } else {
+                displayedStrikes.push(<span className="alert alert-success" role="alert" key={'strike' + i}>O</span>);
+            };
+        };
+        return displayedStrikes;
+    }
+
     return <main>
         <h1>Where is this verse?</h1>
         <p>{selectedVerse.text}</p>
@@ -180,17 +198,20 @@ export function Play() {
         <button onClick={async ()=>setHintVerses([...hintVerses, await addHint()])}>Reveal next verse</button>
         <div className="form-check" id='bookForm'>
             {displayBooks()}
-            <button type="button" className="btn btn-outline-light" onClick={() => handleSubmit(bookGuess, 'book', setBookCorrect)}>Guess Book</button>
+            <button type="button" className="btn btn-outline-secondary" onClick={() => handleSubmit(bookGuess, 'book', ()=>setBookCorrect(true))}>Guess Book</button>
         </div>
         <br/>
         {bookCorrect && <div className="form-check" id='chapterForm'>
             {displayChapters()}
-            <button type="button" className="btn btn-outline-light" onClick={()=>handleSubmit(chapterGuess, 'chapter', setChapterCorrect)}>Guess Chapter</button>
+            <button type="button" className="btn btn-outline-secondary" onClick={()=>handleSubmit(chapterGuess, 'chapter', ()=>setChapterCorrect(true))}>Guess Chapter</button>
         </div>}
         <br/>
         {chapterCorrect && <div className="form-check">
             {displayVerses()}
-            <button type="button" className="btn btn-outline-light" onClick={()=>handleVerseSubmit(verseGuess)}>Guess Verse</button>
+            <button type="button" className="btn btn-outline-secondary" onClick={()=>handleSubmit(verseGuess, 'verse', ()=>navigate('/win?complete=verse'))}>Guess Verse</button>
         </div>}
+        <div>
+            {displayStrikes()}
+        </div>
     </main>
 }
