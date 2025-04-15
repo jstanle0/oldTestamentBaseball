@@ -1,6 +1,8 @@
-# wordguesser
-Welcome to Word Guesser!
-Based on the specification, I felt React and web technologies would be the best option to have a dynamially updating GUI within the time frame.
+# Old Testament Baseball
+Welcome to Old Testament Baseball!
+This is a simple website that pulls a verse from a third party API and has some basic logic to process guessing.
+
+[Here](https://ot.shootforthestars.click) is the link to the public url.
 
 In order to run the code, first clone the repositiory and install the dependencies:
 ```
@@ -12,4 +14,4 @@ npm run dev
 ```
 Entering "o" will open the website in a browser.
 
-If you have any additional questions, feel free to reach out to me. Thanks for your time and consideration.
+[Here](https://ot.shootforthestars.click/nt) is a link to New Testament mode.
